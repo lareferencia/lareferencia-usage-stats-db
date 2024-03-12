@@ -46,9 +46,8 @@ def main():
 
     #config
     config = read_ini(args.config_file_path);
-    database_connection_str = config["DB"]["CONNECTION"] 
-    matomo_token = config["MATOMO"]["MATOMO_TOKEN"]
-    matomo_url =  config["MATOMO"]["MATOMO_URL"]
+    database_connection_str = config["DB"]["SQLALCHEMY_DATABASE_URI"] 
+
 
     # database
     engine = create_engine(database_connection_str)
