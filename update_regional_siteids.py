@@ -1,5 +1,5 @@
 
-from models.models import Source, Country
+from lareferenciastatsdb import Source, Country
 from sqlalchemy import create_engine, MetaData, Table, select
 from sqlalchemy.orm import Session
 
