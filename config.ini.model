@@ -1,0 +1,11 @@
+[DB]
+SQLALCHEMY_DATABASE_URI = sqlite:///../lareferencia-usage-stats-admin/app.db
+
+
+
+
+
+
+
+
+
