@@ -99,11 +99,6 @@ def parse_args():
                         help="config file",
                         required=False)
 
-    parser.add_argument("-f",
-                        "--excel_file_path",
-                        help="excel file path",
-                        required=True)
-
     
     return parser.parse_args()
 
