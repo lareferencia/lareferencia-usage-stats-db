@@ -33,7 +33,7 @@ setuptools.setup(
         'Programming Language :: Python :: 3 :: Only',
         'Operating System :: OS Independent',
     ],
-    python_requires='>=3.10',
+    python_requires='>=3.6',
     # install_requires=['Pillow'],
     extras_require={
         'dev': ['check-manifest'],
