@@ -1,6 +1,6 @@
 import unittest
 
-from lareferenciastatsdb import Source, Country
+from lareferenciastatsdb import UsageStatsDatabaseHelper
 
 
 class TestSimple(unittest.TestCase):
