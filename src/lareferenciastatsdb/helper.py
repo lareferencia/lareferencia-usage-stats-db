@@ -7,6 +7,23 @@ from .models import Source
 class IdentifierPrefixNotFoundException(Exception):
     pass
 
+"""
+Get a Source object from the database by source_id
+"""
+def get_source_by_id(database_uri, source_id):
+
+    engine = create_engine(database_uri)
+    with Session(engine) as session:
+        return session.query(Source).filter(Source.source_id == source_id).first()
+
+"""
+Get a Source object from the database by site_id
+"""
+def get_source_by_site_id(database_uri, site_id):
+        engine = create_engine(database_uri)
+        with Session(engine) as session:
+            return session.query(Source).filter(Source.site_id == site_id).first()
+
 
 """"
 Get and store the sources data from the database and create the dicts for fast access to the data
@@ -18,8 +35,6 @@ class UsageStatsDatabaseHelper:
     def __init__(self, config):
         self.config = config
         self.engine = create_engine(config["USAGE_STATS_DB"]["SQLALCHEMY_DATABASE_URI"])
-
-        self.index_prefix = config["USAGE_STATS_INDEX"]["INDEX_PREFIX"]
 
         # create dicts to store data
         self.sources_by_id = {}
@@ -97,6 +112,13 @@ class UsageStatsDatabaseHelper:
     def get_source_by_country_iso(self, country_iso):
         return self.national_sources_by_country_iso.get(country_iso, None)
     
+
+    """
+    Get all sources site_ids
+    """
+    def get_all_site_ids(self):
+        return self.sources_by_site_id.keys()
+    
     """
     Get all national sources
     """
@@ -116,7 +138,7 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the identifier prefix is not found in the database
     """                
-    def get_indices_from_identifier(self, identifier):
+    def get_indices_from_identifier(self, index_prefix, identifier):
 
         index_names = []
 
@@ -137,9 +159,9 @@ class UsageStatsDatabaseHelper:
         if regional_site_id is None:
             regional_site_id = self.DEFAULT_REGIONAL_SITE_ID
 
-        index_names.append(self.get_index_pattern_by_site_id(site_id))
-        index_names.append(self.get_index_pattern_by_site_id(national_site_id))
-        index_names.append(self.get_index_pattern_by_site_id(regional_site_id))
+        index_names.append(self.get_index_pattern_by_site_id(index_prefix,site_id))
+        index_names.append(self.get_index_pattern_by_site_id(index_prefix,national_site_id))
+        index_names.append(self.get_index_pattern_by_site_id(index_prefix,regional_site_id))
 
         return index_names
     
@@ -149,7 +171,7 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_source(self, source_id):
+    def get_indices_from_source(self, index_prefix, source_id):
 
         index_names = set()
 
@@ -177,17 +199,17 @@ class UsageStatsDatabaseHelper:
             regional_site_id = source.site_id
             
             for national_source in self.get_national_sources():
-                index_names.add(self.get_index_pattern_by_site_id(national_source.site_id))
+                index_names.add(self.get_index_pattern_by_site_id(index_prefix,national_source.site_id))
 
         if site_id is not None:
-            index_names.add(self.get_index_pattern_by_site_id(site_id))
+            index_names.add(self.get_index_pattern_by_site_id(index_prefix,site_id))
 
         if national_site_id is not None:
-            index_names.add(self.get_index_pattern_by_site_id(national_site_id))
+            index_names.add(self.get_index_pattern_by_site_id(index_prefix,national_site_id))
 
         if regional_site_id is None:
             regional_site_id = self.DEFAULT_REGIONAL_SITE_ID
-        index_names.add(self.get_index_pattern_by_site_id(regional_site_id))
+        index_names.add(self.get_index_pattern_by_site_id(index_prefix,regional_site_id))
 
         return list(index_names)
     
@@ -197,7 +219,7 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_national(self, source_id):
+    def get_indices_from_national(self, index_prefix, source_id):
 
         index_names = set()
 
@@ -209,15 +231,15 @@ class UsageStatsDatabaseHelper:
         if source is None:
             raise Exception("Source %s not found in the database " % source_id)
 
-        index_names.add(self.get_index_pattern_by_site_id(source.site_id))
+        index_names.add(self.get_index_pattern_by_site_id(index_prefix,source.site_id))
 
         for repository in self.get_repository_sources_by_country_iso(source.country_iso.lower()):
-            index_names.add(self.get_index_pattern_by_site_id(repository.site_id))
+            index_names.add(self.get_index_pattern_by_site_id(index_prefix,repository.site_id))
 
         return list(index_names)
 
-    def get_index_name(self, idsite, year):
-        return '%s-%s-%s' % (self.index_prefix, idsite, year)
+    def get_index_name(self, index_prefix, idsite, year):
+        return '%s-%s-%s' % (index_prefix, idsite, year)
     
-    def get_index_pattern_by_site_id(self, idsite):
-        return '%s-%s-*' % (self.index_prefix, idsite)
+    def get_index_pattern_by_site_id(self, index_prefix, idsite):
+        return '%s-%s-*' % (index_prefix, idsite)
