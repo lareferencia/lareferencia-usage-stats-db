@@ -17,7 +17,7 @@ def extract_oai_identifier_prefix(identifier):
         # return the identifier prefix
         return match.group(1) + match.group(2)
     else:
-        return None
+        return identifier
     
 def normalize_oai_identifier(identifier):
 
@@ -26,7 +26,7 @@ def normalize_oai_identifier(identifier):
     if match:
         return match.group(1) + match.group(2) + match.group(3)
     else:
-        return None
+        return identifier
 
 def normalize_oai_identifier_prefix(identifier):
 
