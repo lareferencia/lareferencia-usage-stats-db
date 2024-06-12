@@ -239,7 +239,7 @@ class UsageStatsDatabaseHelper:
         return list(index_names)
 
     def get_index_name(self, index_prefix, idsite, year):
-        return '%s-%s' % (index_prefix, idsite, year)
+        return '%s-%s' % (index_prefix, idsite)
     
     def get_index_pattern_by_site_id(self, index_prefix, idsite):
         return '%s-%s-*' % (index_prefix, idsite)
