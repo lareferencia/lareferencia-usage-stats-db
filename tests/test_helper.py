@@ -1,6 +1,6 @@
 import unittest
 
-from lareferenciastatsdb import UsageStatsDatabaseHelper
+from lareferenciastatsdb import UsageStatsDatabaseHelper, get_source_by_id
 
 
 import configparser
@@ -37,6 +37,10 @@ class TestSimple(unittest.TestCase):
         print( helper.get_indices_from_source("SITEID::1") )
         print( helper.get_indices_from_source("SITEID::59") )
         print( helper.get_indices_from_source("OPENDOAR::1329") )
+
+    def test_get_source_by_source_id(self):
+        config = read_ini("config.tst.ini")
+        print ( get_source_by_id(config, "SITEID::1").name )
 
 
 
