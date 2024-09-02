@@ -2,7 +2,7 @@ from sqlalchemy import create_engine, MetaData
 from sqlalchemy.orm import Session
 
 from .normalize import normalize_oai_identifier_prefix, extract_oai_identifier_prefix
-from .models import Source
+from .models import Source, SOURCE_TYPE_REPOSITORY, SOURCE_TYPE_NATIONAL, SOURCE_TYPE_REGIONAL
 
 class IdentifierPrefixNotFoundException(Exception):
     pass
@@ -42,6 +42,7 @@ class UsageStatsDatabaseHelper:
         self.sources_by_identifer_prefix = {}
         self.national_sources_by_country_iso = {}
         self.repository_sources_by_country_iso = {}
+        self.country_by_identifier_prefix = {}
 
         self.update_data_from_db()
 
@@ -67,6 +68,7 @@ class UsageStatsDatabaseHelper:
                     normalized_oai_prefix = normalize_oai_identifier_prefix(source.identifier_prefix)
                     if normalized_oai_prefix is not None:
                         self.sources_by_identifer_prefix[normalized_oai_prefix] = source
+                        self.country_by_identifier_prefix[normalized_oai_prefix] = source.country_iso
 
                 if source.type == "R" and source.country_iso is not None and source.country_iso != "":
                     repositories = self.repository_sources_by_country_iso.get(source.country_iso.lower(), [])
@@ -183,17 +185,17 @@ class UsageStatsDatabaseHelper:
         if source is None:
             raise Exception("Source %s not found in the database " % source_id)
 
-        if source.type == "R":
+        if source.type == SOURCE_TYPE_REPOSITORY:
             site_id = source.site_id
             national_site_id = source.national_site_id
             regional_site_id = source.regional_site_id
 
-        elif source.type == "N":
+        elif source.type == SOURCE_TYPE_NATIONAL:
             site_id = None
             national_site_id = source.site_id
             regional_site_id = source.regional_site_id
 
-        elif source.type == "L":
+        elif source.type == SOURCE_TYPE_REGIONAL:
             site_id = None
             national_site_id = None
             regional_site_id = source.site_id
@@ -243,3 +245,19 @@ class UsageStatsDatabaseHelper:
     
     def get_index_pattern_by_site_id(self, index_prefix, idsite): 
         return '%s-%s' % (index_prefix, idsite)
+    
+    def get_country_by_level_and_identifier(self, source, identifier):
+
+        level = source.level
+
+        if level == SOURCE_TYPE_NATIONAL:
+            return source.country_iso
+        elif level == SOURCE_TYPE_REPOSITORY:
+            return source.country_iso
+        elif level == SOURCE_TYPE_REGIONAL:
+            identifier_prefix = extract_oai_identifier_prefix(identifier)
+            normalize_oai_identifier_prefix = normalize_oai_identifier_prefix(identifier_prefix)
+            return self.country_by_identifier_prefix.get(normalize_oai_identifier_prefix, 'XX')
+            
+            
+
