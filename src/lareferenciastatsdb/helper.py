@@ -248,7 +248,7 @@ class UsageStatsDatabaseHelper:
     
     def get_country_by_level_and_identifier(self, source, identifier):
 
-        level = source.level
+        level = source.type
 
         if level == SOURCE_TYPE_NATIONAL:
             return source.country_iso
