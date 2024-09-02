@@ -256,8 +256,8 @@ class UsageStatsDatabaseHelper:
             return source.country_iso
         elif level == SOURCE_TYPE_REGIONAL:
             identifier_prefix = extract_oai_identifier_prefix(identifier)
-            normalize_oai_identifier_prefix = normalize_oai_identifier_prefix(identifier_prefix)
-            return self.country_by_identifier_prefix.get(normalize_oai_identifier_prefix, 'XX')
+            normalized_oai_identifier_prefix = normalize_oai_identifier_prefix(identifier_prefix)
+            return self.country_by_identifier_prefix.get(normalized_oai_identifier_prefix, 'XX')
             
             
 
