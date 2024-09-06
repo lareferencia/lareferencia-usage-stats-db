@@ -64,18 +64,18 @@ class UsageStatsDatabaseHelper:
                 self.sources_by_id[source_id] = source
                 self.sources_by_site_id[source.site_id] = source
 
-                if source.type == "R" and source.identifier_prefix is not None:
+                if source.type == SOURCE_TYPE_REPOSITORY and source.identifier_prefix is not None:
                     normalized_oai_prefix = normalize_oai_identifier_prefix(source.identifier_prefix)
                     if normalized_oai_prefix is not None:
                         self.sources_by_identifer_prefix[normalized_oai_prefix] = source
                         self.country_by_identifier_prefix[normalized_oai_prefix] = source.country_iso
 
-                if source.type == "R" and source.country_iso is not None and source.country_iso != "":
+                if source.type == SOURCE_TYPE_REPOSITORY and source.country_iso is not None and source.country_iso != "":
                     repositories = self.repository_sources_by_country_iso.get(source.country_iso.lower(), [])
                     repositories.append(source)
                     self.repository_sources_by_country_iso[source.country_iso.lower()] = repositories
 
-                if source.type == "N" and source.country_iso is not None and source.country_iso != "":
+                if source.type == SOURCE_TYPE_NATIONAL and source.country_iso is not None and source.country_iso != "":
                     self.national_sources_by_country_iso[source.country_iso.lower()] = source
 
 
@@ -161,9 +161,9 @@ class UsageStatsDatabaseHelper:
         if regional_site_id is None:
             regional_site_id = self.DEFAULT_REGIONAL_SITE_ID
 
-        index_names.append(self.get_index_pattern_by_site_id(index_prefix,site_id))
-        index_names.append(self.get_index_pattern_by_site_id(index_prefix,national_site_id))
-        index_names.append(self.get_index_pattern_by_site_id(index_prefix,regional_site_id))
+        index_names.append(self.get_index_name(index_prefix,site_id))
+        index_names.append(self.get_index_name(index_prefix,national_site_id))
+        index_names.append(self.get_index_name(index_prefix,regional_site_id))
 
         return index_names
     
@@ -173,17 +173,9 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_source(self, index_prefix, source_id):
+    def get_indices_from_source(self, index_prefix, source):
 
         index_names = set()
-
-        if source_id is None or source_id == "":
-            raise Exception("Source_id parameter is required")
-
-        source = self.get_source_by_id(source_id.lower()) 
-
-        if source is None:
-            raise Exception("Source %s not found in the database " % source_id)
 
         if source.type == SOURCE_TYPE_REPOSITORY:
             site_id = source.site_id
@@ -201,17 +193,17 @@ class UsageStatsDatabaseHelper:
             regional_site_id = source.site_id
             
             for national_source in self.get_national_sources():
-                index_names.add(self.get_index_pattern_by_site_id(index_prefix,national_source.site_id))
+                index_names.add(self.get_index_name(index_prefix,national_source.site_id))
 
         if site_id is not None:
-            index_names.add(self.get_index_pattern_by_site_id(index_prefix,site_id))
+            index_names.add(self.get_index_name(index_prefix,site_id))
 
         if national_site_id is not None:
-            index_names.add(self.get_index_pattern_by_site_id(index_prefix,national_site_id))
+            index_names.add(self.get_index_name(index_prefix,national_site_id))
 
         if regional_site_id is None:
             regional_site_id = self.DEFAULT_REGIONAL_SITE_ID
-        index_names.add(self.get_index_pattern_by_site_id(index_prefix,regional_site_id))
+        index_names.add(self.get_index_name(index_prefix,regional_site_id))
 
         return list(index_names)
     
@@ -221,43 +213,43 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_national(self, index_prefix, source_id):
+    def get_indices_from_national_source(self, source):
 
         index_names = set()
 
-        if source_id is None or source_id == "":
-            raise Exception("Source_id parameter is required")
+        if source is None or source.type != SOURCE_TYPE_NATIONAL:
+            raise Exception("Source %s not found in the database " % source)
 
-        source = self.get_source_by_id(source_id.lower()) 
-
-        if source is None:
-            raise Exception("Source %s not found in the database " % source_id)
-
-        index_names.add(self.get_index_pattern_by_site_id(index_prefix,source.site_id))
+        index_names.add(self.get_index_name(source.site_id))
 
         for repository in self.get_repository_sources_by_country_iso(source.country_iso.lower()):
-            index_names.add(self.get_index_pattern_by_site_id(index_prefix,repository.site_id))
+            index_names.add(self.get_index_name(repository.site_id))
+
+        index_names.add(self.get_index_name(self.DEFAULT_REGIONAL_SITE_ID))
 
         return list(index_names)
+    
+
+    """
+    Get indices for the national source and all repositories of that country
+    :param source: the source to search for
+    :return: list with indices names
+    :raise Exception: if the source_id is not found in the database
+    """             
+    def get_indices_from_regional_source(self, source):
+
+        index_names = set()
+
+        if source is None or source.type != SOURCE_TYPE_REGIONAL:
+            raise Exception("Source %s not found in the database " % source)
+
+        index_names.add(self.get_index_name('*'))
+
+        return list(index_names)
+    
 
     def get_index_name(self, index_prefix, idsite, year):
         return '%s-%s' % (index_prefix, idsite)
     
-    def get_index_pattern_by_site_id(self, index_prefix, idsite): 
-        return '%s-%s' % (index_prefix, idsite)
+   
     
-    def get_country_by_level_and_identifier(self, source, identifier):
-
-        level = source.type
-
-        if level == SOURCE_TYPE_NATIONAL:
-            return source.country_iso
-        elif level == SOURCE_TYPE_REPOSITORY:
-            return source.country_iso
-        elif level == SOURCE_TYPE_REGIONAL:
-            identifier_prefix = extract_oai_identifier_prefix(identifier)
-            normalized_oai_identifier_prefix = normalize_oai_identifier_prefix(identifier_prefix)
-            return self.country_by_identifier_prefix.get(normalized_oai_identifier_prefix, 'XX')
-            
-            
-
