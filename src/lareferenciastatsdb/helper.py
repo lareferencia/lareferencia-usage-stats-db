@@ -213,19 +213,19 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_national_source(self, source):
+    def get_indices_from_national_source(self, index_prefix, source):
 
         index_names = set()
 
         if source is None or source.type != SOURCE_TYPE_NATIONAL:
             raise Exception("Source %s not found in the database " % source)
 
-        index_names.add(self.get_index_name(source.site_id))
+        index_names.add(self.get_index_name(index_prefix,source.site_id))
 
         for repository in self.get_repository_sources_by_country_iso(source.country_iso.lower()):
-            index_names.add(self.get_index_name(repository.site_id))
+            index_names.add(self.get_index_name(index_prefix,repository.site_id))
 
-        index_names.add(self.get_index_name(self.DEFAULT_REGIONAL_SITE_ID))
+        index_names.add(self.get_index_name(index_prefix,self.DEFAULT_REGIONAL_SITE_ID))
 
         return list(index_names)
     
@@ -236,14 +236,14 @@ class UsageStatsDatabaseHelper:
     :return: list with indices names
     :raise Exception: if the source_id is not found in the database
     """             
-    def get_indices_from_regional_source(self, source):
+    def get_indices_from_regional_source(self, index_prefix, source):
 
         index_names = set()
 
         if source is None or source.type != SOURCE_TYPE_REGIONAL:
             raise Exception("Source %s not found in the database " % source)
 
-        index_names.add(self.get_index_name('*'))
+        index_names.add(self.get_index_name(index_prefix,'*'))
 
         return list(index_names)
     
