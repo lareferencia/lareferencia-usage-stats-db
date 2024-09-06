@@ -82,10 +82,10 @@ class UsageStatsDatabaseHelper:
     """
     Get the identifier prefix from the source_id
     """
-    def get_identifier_prefix_from_source(self, source_id):
+    def get_identifier_prefix_from_source(self, source):
         source = self.get_source_by_id(source_id.lower())
         if source is None:
-            raise Exception("Source %s not found in the database " % source_id)
+            raise Exception("Source %s not found in the database " % str(source))
 
         return normalize_oai_identifier_prefix(source.identifier_prefix)
         
@@ -248,7 +248,7 @@ class UsageStatsDatabaseHelper:
         return list(index_names)
     
 
-    def get_index_name(self, index_prefix, idsite, year):
+    def get_index_name(self, index_prefix, idsite):
         return '%s-%s' % (index_prefix, idsite)
     
    
