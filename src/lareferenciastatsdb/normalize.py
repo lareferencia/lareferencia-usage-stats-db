@@ -11,7 +11,7 @@ OAI_IDENTIFIER_PREFIX_PATTERN = re.compile(r"^(oai:)(?:https?://)?([^/]+)(?:/.+)
 def extract_oai_identifier_prefix(identifier):
     
     # match the identifier against the pattern
-    match = OAI_IDENTIFIER_PATTERN.match(identifier)
+    match = OAI_IDENTIFIER_PREFIX_PATTERN.match(identifier)
 
     if match:
         # return the identifier prefix
