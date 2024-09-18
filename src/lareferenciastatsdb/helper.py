@@ -83,7 +83,7 @@ class UsageStatsDatabaseHelper:
     Get the identifier prefix from the source_id
     """
     def get_identifier_prefix_from_source(self, source):
-        source = self.get_source_by_id(source_id.lower())
+        
         if source is None:
             raise Exception("Source %s not found in the database " % str(source))
 
