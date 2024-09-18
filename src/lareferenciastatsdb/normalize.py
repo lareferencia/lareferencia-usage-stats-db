@@ -4,7 +4,7 @@ import re
 # and trailing slashes folowed by subfolders, so we remove want to have separted groups for the identifier prefix and the unique part, 
 # we will use the groups to normalize the identifier, removing the prefix https and trailing parts after the slashes, also the unique part 
 OAI_IDENTIFIER_PATTERN =        re.compile(r"^(oai:)(?:https?://)?([^/]+)(?:/.+)??(.*)?$")
-OAI_IDENTIFIER_PREFIX_PATTERN = re.compile(r"^(oai:)(?:https?://)?([^/]+)(?:/.+)?")
+OAI_IDENTIFIER_PREFIX_PATTERN = re.compile(r"^(oai:)(?:https?://)?([^/:]+)(?:/.+)?")
 
 
 # normalize an oai-pmh identifier of the form oai:identifier_prefix:identifier removing https:// and http:// prefixes, and trailing slashes

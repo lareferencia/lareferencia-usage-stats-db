@@ -148,7 +148,7 @@ class UsageStatsDatabaseHelper:
             raise Exception(status_code=400, detail="Identifier parameter is required")
         
         normalized_oai_prefix = extract_oai_identifier_prefix(identifier)
-        print(normalized_oai_prefix)
+        #print(normalized_oai_prefix)
      
         identifier_source = self.get_source_by_identifier_prefix(normalized_oai_prefix)
         if identifier_source is None:
